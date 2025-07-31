@@ -1,0 +1,156 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --navy: 15 26 43;
+    --teal: 45 212 191;
+    --coral: 255 107 107;
+  }
+
+  html {
+    font-family: 'Inter', sans-serif;
+  }
+
+  body {
+    @apply bg-navy-50 text-navy-900 antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight text-navy-900;
+  }
+
+  h1 {
+    @apply text-4xl md:text-5xl;
+  }
+
+  h2 {
+    @apply text-3xl md:text-4xl;
+  }
+
+  h3 {
+    @apply text-2xl md:text-3xl;
+  }
+
+  h4 {
+    @apply text-xl md:text-2xl;
+  }
+
+  h5 {
+    @apply text-lg md:text-xl;
+  }
+
+  h6 {
+    @apply text-base md:text-lg;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply bg-teal-500 text-white hover:bg-teal-600 focus-visible:ring-teal-500;
+  }
+
+  .btn-secondary {
+    @apply bg-navy-800 text-white hover:bg-navy-700 focus-visible:ring-navy-800;
+  }
+
+  .btn-outline {
+    @apply border border-navy-200 bg-transparent hover:bg-navy-100 focus-visible:ring-navy-300;
+  }
+
+  .card {
+    @apply rounded-lg bg-white shadow-md transition-all;
+  }
+
+  .founder-card {
+    @apply card overflow-hidden p-6 hover:shadow-lg hover:translate-y-[-4px] transition-all duration-300;
+  }
+
+  .project-card {
+    @apply card overflow-hidden hover:shadow-lg hover:translate-y-[-4px] transition-all duration-300;
+  }
+
+  .stat-card {
+    @apply card flex items-center gap-4 p-4 hover:bg-navy-50 transition-all duration-300;
+  }
+
+  .activity-item {
+    @apply flex items-start gap-3 border-b border-navy-100 py-3 last:border-0;
+  }
+
+  .nav-link {
+    @apply relative px-3 py-2 text-navy-600 transition-colors hover:text-navy-900;
+  }
+
+  .nav-link.active {
+    @apply text-navy-900 font-medium;
+  }
+
+  .nav-link.active::after {
+    @apply content-[''] absolute bottom-0 left-0 w-full h-0.5 bg-teal-500 rounded-full;
+  }
+
+  .gradient-bg {
+    @apply bg-gradient-to-br from-navy-800 to-navy-950;
+  }
+
+  .particle {
+    @apply absolute rounded-full bg-teal-500 opacity-20 animate-pulse;
+  }
+}
+
+.particles-container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* For project showcase filter pill buttons */
+.filter-pill {
+  @apply rounded-full px-3 py-1 text-sm font-medium transition-colors;
+}
+
+.filter-pill.active {
+  @apply bg-teal-500 text-white;
+}
+
+.filter-pill:not(.active) {
+  @apply bg-navy-100 text-navy-700 hover:bg-navy-200;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-navy-100;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-navy-300 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-navy-400;
+}

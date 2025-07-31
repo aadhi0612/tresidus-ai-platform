@@ -1,0 +1,33 @@
+[
+  {
+    "id": "sample001",
+    "name": "John Smith",
+    "email": "john.smith@techcorp.com",
+    "company": "TechCorp Solutions",
+    "phone": "+1 (555) 123-4567",
+    "projectType": "AI Strategy Development",
+    "budget": "$50,000 - $100,000",
+    "timeline": "3-6 months",
+    "description": "We're looking to implement AI-driven customer service automation to improve response times and reduce operational costs. Our current system handles about 10,000 customer inquiries per month, and we want to automate 70% of routine queries while maintaining high customer satisfaction.",
+    "preferredDate": "2025-08-15",
+    "preferredTime": "14:00",
+    "communicationPreference": "video",
+    "status": "pending",
+    "createdAt": "2025-07-30T10:30:00.000Z",
+    "updatedAt": "2025-07-30T10:30:00.000Z",
+    "notes": [],
+    "communications": [
+      {
+        "id": "comm001",
+        "type": "email",
+        "subject": "Initial consultation request received",
+        "content": "Thank you for your interest in our AI consulting services. We've received your request and will review it within 24 hours. Our team is excited to discuss how we can help TechCorp Solutions implement AI-driven customer service automation.",
+        "method": "email",
+        "followUpRequired": true,
+        "followUpDate": "2025-08-01",
+        "createdAt": "2025-07-30T10:35:00.000Z",
+        "createdBy": "system"
+      }
+    ]
+  }
+]
