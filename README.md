@@ -2,6 +2,10 @@
 
 Welcome to Tresidus AI, an innovative AI agentic company specializing in cutting-edge artificial intelligence solutions and autonomous agent development.
 
+## 🌟 Live Application
+- **Frontend**: [Deployed on AWS Amplify](https://main.amplify.app)
+- **Backend API**: [https://zjgsssms17.execute-api.us-east-1.amazonaws.com/prod](https://zjgsssms17.execute-api.us-east-1.amazonaws.com/prod)
+
 ## 🚀 Featured Projects
 
 ### [StockAgentIQ](https://stockagentiq.com)
@@ -13,30 +17,19 @@ Advanced prompt generator for GenAI use cases, helping users create optimized pr
 ### [Socials](https://socials.dataopslabs.com/)
 Multi-platform social media management tool that enables content generation and direct scheduling across multiple social platforms with zero effort.
 
-## 🏗️ Project Structure
+## 🏗️ Architecture
 
-```
-project/
-├── frontend/          # React + Vite frontend application
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── consulting/    # Consulting form and dashboard
-│   │   │   ├── home/          # Homepage components
-│   │   │   └── layout/        # Header, footer, etc.
-│   │   ├── pages/             # Main pages
-│   │   └── utils/             # Utilities and data
-│   ├── package.json
-│   └── ...
-├── backend/           # Node.js + Express backend API
-│   ├── routes/
-│   │   └── consulting.js      # Consulting API endpoints
-│   ├── data/                  # JSON data storage
-│   ├── server.js
-│   ├── package.json
-│   └── ...
-├── start.sh          # Development environment startup script
-└── README.md
-```
+### Frontend
+- **Framework**: React 18 + TypeScript
+- **Styling**: Tailwind CSS
+- **Build Tool**: Vite
+- **Deployment**: AWS Amplify
+
+### Backend
+- **Runtime**: Node.js 18.x
+- **Framework**: Express.js
+- **Deployment**: AWS Lambda + API Gateway
+- **Storage**: JSON file-based (easily upgradeable to database)
 
 ## 🚀 Quick Start
 
@@ -47,9 +40,10 @@ project/
 
 ### Local Development
 
-1. **Clone and navigate to the project:**
+1. **Clone the repository:**
    ```bash
-   cd /path/to/project
+   git clone https://github.com/aadhi0612/tresidus-ai-platform.git
+   cd tresidus-ai-platform
    ```
 
 2. **Start the development environment:**
@@ -57,75 +51,15 @@ project/
    ./start.sh
    ```
 
-   This script will:
-   - Install dependencies for root, frontend, and backend
-   - Start the backend server on `http://localhost:5000`
-   - Start the frontend development server on `http://localhost:5173`
+3. **Access the application:**
+   - Frontend: http://localhost:5173
+   - Backend API: http://localhost:5000
 
-3. **Manual startup (alternative):**
-   
-   **Install all dependencies:**
-   ```bash
-   npm run install:all
-   ```
-   
-   **Start both servers:**
-   ```bash
-   npm run dev
-   ```
-
-### AWS Amplify Deployment
-
-This project is configured for AWS Amplify deployment with both frontend hosting and serverless backend.
-
-1. **Verify deployment readiness:**
-   ```bash
-   ./verify-deployment.sh
-   ```
-
-2. **Deploy to AWS Amplify:**
-   - See [AMPLIFY_DEPLOYMENT.md](./AMPLIFY_DEPLOYMENT.md) for detailed instructions
-   - Push to Git repository
-   - Connect to AWS Amplify Console
-   - Configure environment variables
-   - Deploy!
-
-3. **Quick deployment script:**
-   ```bash
-   ./deploy.sh
-   ```
-
-## 🌐 Access Points
-
-- **Frontend Application:** http://localhost:5173
-- **Backend API:** http://localhost:5000
-- **API Health Check:** http://localhost:5000/health
-- **Consulting API:** http://localhost:5000/api/consulting
-
-## 🔧 Development
-
-### Frontend
-- Built with React 18 + TypeScript
-- Styled with Tailwind CSS
-- Bundled with Vite
-- Hot reload enabled for development
-- Consulting form and dashboard for client management
-
-### Backend
-- Node.js with Express framework
-- CORS enabled for cross-origin requests
-- Morgan logging middleware
-- Helmet for security headers
-- Environment-based configuration
-- File-based JSON storage for consulting requests
-
-## 📊 API Endpoints
+## 🌐 API Endpoints
 
 ### General
 - `GET /` - API information and status
 - `GET /health` - Health check endpoint
-- `GET /api/projects` - Projects data (to be implemented)
-- `GET /api/analytics` - Analytics data (to be implemented)
 
 ### Consulting API
 - `GET /api/consulting` - Get all consulting requests
@@ -133,74 +67,48 @@ This project is configured for AWS Amplify deployment with both frontend hosting
 - `POST /api/consulting` - Create new consulting request
 - `PUT /api/consulting/:id` - Update consulting request
 - `DELETE /api/consulting/:id` - Delete consulting request
-- `POST /api/consulting/:id/communication` - Add communication record
+
+### Projects & Analytics
+- `GET /api/projects` - Get projects data
+- `GET /api/analytics` - Get analytics data
 
 ## 🎯 Key Features
 
 ### Core Platform
-- **Responsive Design:** Mobile-first approach with Tailwind CSS
-- **Project Showcase:** Interactive project cards with live demo links
-- **Real-time Analytics:** Dashboard with key performance metrics
-- **Activity Feed:** Live updates and system notifications
-- **Industry Filtering:** Filter projects by industry and status
-- **Search Functionality:** Search through projects and content
+- **Responsive Design**: Mobile-first approach with Tailwind CSS
+- **Project Showcase**: Interactive project cards with live demo links
+- **Real-time Analytics**: Dashboard with key performance metrics
+- **Activity Feed**: Live updates and system notifications
 
 ### Consulting System
-- **Consultation Scheduling:** Comprehensive form for client requests
-- **Request Management:** Dashboard to view and manage consulting requests
-- **Communication Tracking:** Record and track all client communications
-- **Status Management:** Track request status from pending to completion
-- **Follow-up System:** Set and track follow-up requirements
-- **Data Persistence:** All data stored in JSON files for easy backup
-
-## 📋 Consulting Features
-
-### Client-Facing Form
-- Personal and company information collection
-- Project type and budget selection
-- Timeline and scheduling preferences
-- Detailed project description
-- Communication preference settings
-- Real-time form validation
-- Success confirmation with auto-reset
-
-### Management Dashboard
-- View all consulting requests in organized cards
-- Filter by status (pending, contacted, scheduled, completed, cancelled)
-- Search by name, company, or email
-- Detailed request view with all information
-- Status update functionality
-- Communication history tracking
-- Add notes and communication records
-- Follow-up reminder system
-
-### Data Storage
-- JSON-based storage in `backend/data/consulting-requests.json`
-- Automatic file creation and management
-- Structured data with timestamps
-- Communication history per request
-- Easy backup and migration
-
-## 🔒 Environment Configuration
-
-Copy `.env.example` to `.env` in the backend directory and configure your environment variables:
-
-```bash
-cd backend
-cp .env.example .env
-```
+- **Consultation Scheduling**: Comprehensive form for client requests
+- **Request Management**: Dashboard to view and manage consulting requests
+- **Communication Tracking**: Record and track all client communications
+- **Status Management**: Track request status from pending to completion
 
 ## 🚦 Available Scripts
+
+### Root Level
+- `npm run install:all` - Install all dependencies
+- `npm run dev` - Start both frontend and backend
+- `./start.sh` - Development environment startup script
 
 ### Frontend
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
 
 ### Backend
 - `npm run dev` - Start development server with nodemon
 - `npm start` - Start production server
+
+## 🚀 Deployment
+
+### AWS Amplify (Frontend)
+The frontend is automatically deployed to AWS Amplify on every push to the main branch.
+
+### AWS Lambda (Backend)
+The backend is deployed as AWS Lambda functions with API Gateway integration.
 
 ## 🤝 Contributing
 

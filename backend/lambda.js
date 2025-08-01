@@ -1,5 +1,5 @@
 const serverless = require('serverless-http');
 const app = require('./server');
 
-// Export the serverless handler
-module.exports.handler = serverless(app);
+// Export the handler for AWS Lambda
+exports.handler = serverless(app);
