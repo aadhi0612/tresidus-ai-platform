@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Search, BarChart2, Layers, Cpu } from 'lucide-react';
-import { projects, industries, statuses } from '../../utils/data';
+import { Search, Layers, Mail, Star } from 'lucide-react';
+import { mainProject, communityProjects } from '../../utils/data';
 import { Project } from '../../types';
 
-const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
+const ProjectCard: React.FC<{ project: Project; isMain?: boolean }> = ({ project, isMain = false }) => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Live':
@@ -25,7 +25,7 @@ const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
 
   return (
     <div 
-      className={`project-card overflow-hidden flex flex-col h-full ${project.redirectUrl ? 'cursor-pointer hover:shadow-lg transition-shadow duration-300' : ''}`}
+      className={`project-card overflow-hidden flex flex-col h-full ${project.redirectUrl ? 'cursor-pointer hover:shadow-lg transition-shadow duration-300' : ''} ${isMain ? 'border-2 border-teal-200' : ''}`}
       onClick={handleCardClick}
     >
       {/* Thumbnail */}
@@ -47,51 +47,64 @@ const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
             </span>
           </div>
         )}
+        {isMain && (
+          <div className="absolute bottom-2 left-2">
+            <span className="bg-teal-500 text-white text-xs px-2 py-1 rounded-full font-medium flex items-center">
+              <Star className="h-3 w-3 mr-1" />
+              Main Project
+            </span>
+          </div>
+        )}
       </div>
       
       {/* Content */}
       <div className="p-5 flex flex-col flex-grow">
         <h3 className="text-lg font-semibold mb-2">{project.name}</h3>
-        <p className="text-navy-600 text-sm mb-4 flex-grow">{project.description}</p>
-        <div className="flex items-center justify-between text-xs border-t border-navy-100 pt-3">
-          <div className="flex items-center">
-            <BarChart2 className="h-4 w-4 text-teal-500 mr-1" />
-            <span>ROI {project.metrics.roi}</span>
-          </div>
-          <div className="flex items-center">
-            <Cpu className="h-4 w-4 text-navy-500 mr-1" />
-            <span>Models: {project.metrics.modelsDeployed}</span>
-          </div>
-        </div>
+        <p className="text-navy-600 text-sm flex-grow">{project.description}</p>
       </div>
     </div>
   );
 };
 
+const ContactSection: React.FC = () => {
+  const handleContactClick = () => {
+    window.location.href = 'mailto:support@tresidus.com';
+  };
+
+  return (
+    <div className="bg-teal-50 rounded-lg p-6 text-center">
+      <Mail className="h-12 w-12 text-teal-500 mx-auto mb-4" />
+      <h3 className="text-xl font-semibold text-navy-900 mb-2">Get in Touch</h3>
+      <p className="text-navy-600 mb-4">
+        Have questions about our projects or need custom AI solutions?
+      </p>
+      <button
+        onClick={handleContactClick}
+        className="bg-teal-500 text-white px-6 py-2 rounded-md hover:bg-teal-600 transition-colors"
+      >
+        Contact Us
+      </button>
+    </div>
+  );
+};
+
 const ProjectsShowcase: React.FC = () => {
-  const [selectedIndustry, setSelectedIndustry] = useState('All Industries');
-  const [selectedStatus, setSelectedStatus] = useState('All Statuses');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredProjects = projects.filter(project => {
-    // Filter by industry
-    if (selectedIndustry !== 'All Industries' && project.industry !== selectedIndustry) {
-      return false;
-    }
-    
-    // Filter by status
-    if (selectedStatus !== 'All Statuses' && project.status !== selectedStatus) {
-      return false;
-    }
-    
-    // Filter by search query
-    if (searchQuery && !project.name.toLowerCase().includes(searchQuery.toLowerCase()) && 
-        !project.description.toLowerCase().includes(searchQuery.toLowerCase())) {
-      return false;
-    }
-    
-    return true;
-  });
+  const filterProjects = (projects: Project[]) => {
+    return projects.filter(project => {
+      if (searchQuery && !project.name.toLowerCase().includes(searchQuery.toLowerCase()) && 
+          !project.description.toLowerCase().includes(searchQuery.toLowerCase())) {
+        return false;
+      }
+      return true;
+    });
+  };
+
+  const filteredCommunityProjects = filterProjects(communityProjects);
+  const showMainProject = !searchQuery || 
+    mainProject.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    mainProject.description.toLowerCase().includes(searchQuery.toLowerCase());
 
   return (
     <section className="py-16">
@@ -113,51 +126,46 @@ const ProjectsShowcase: React.FC = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-navy-400 h-4 w-4" />
           </div>
         </div>
-        
-        {/* Filters */}
-        <div className="mb-8 flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
-          {/* Industry filter */}
-          <div className="flex flex-wrap gap-2">
-            <span className="text-sm font-medium text-navy-600 self-center mr-2">Industry:</span>
-            {industries.map(industry => (
-              <button
-                key={industry}
-                className={`filter-pill ${selectedIndustry === industry ? 'active' : ''}`}
-                onClick={() => setSelectedIndustry(industry)}
-              >
-                {industry}
-              </button>
-            ))}
-          </div>
-          
-          {/* Status filter */}
-          <div className="flex flex-wrap gap-2">
-            <span className="text-sm font-medium text-navy-600 self-center mr-2">Status:</span>
-            {statuses.map(status => (
-              <button
-                key={status}
-                className={`filter-pill ${selectedStatus === status ? 'active' : ''}`}
-                onClick={() => setSelectedStatus(status)}
-              >
-                {status}
-              </button>
-            ))}
-          </div>
-        </div>
-        
-        {/* Projects grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredProjects.length > 0 ? (
-            filteredProjects.map(project => (
-              <ProjectCard key={project.id} project={project} />
-            ))
-          ) : (
-            <div className="col-span-full text-center py-12">
-              <Layers className="h-12 w-12 text-navy-300 mx-auto mb-4" />
-              <h3 className="text-xl font-medium text-navy-700 mb-2">No projects found</h3>
-              <p className="text-navy-500">Try adjusting your filters or search query</p>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          {/* Main Project */}
+          <div>
+            <h3 className="text-2xl font-semibold text-navy-900 mb-6 flex items-center">
+              <Star className="h-6 w-6 text-teal-500 mr-2" />
+              Main Project
+            </h3>
+            <div className="space-y-6">
+              {showMainProject ? (
+                <ProjectCard project={mainProject} isMain={true} />
+              ) : (
+                <div className="text-center py-8">
+                  <Layers className="h-12 w-12 text-navy-300 mx-auto mb-4" />
+                  <p className="text-navy-500">No main project found</p>
+                </div>
+              )}
+              <ContactSection />
             </div>
-          )}
+          </div>
+
+          {/* Community Projects */}
+          <div>
+            <h3 className="text-2xl font-semibold text-navy-900 mb-6 flex items-center">
+              <Layers className="h-6 w-6 text-coral-500 mr-2" />
+              Community Projects
+            </h3>
+            <div className="space-y-6">
+              {filteredCommunityProjects.length > 0 ? (
+                filteredCommunityProjects.map(project => (
+                  <ProjectCard key={project.id} project={project} />
+                ))
+              ) : (
+                <div className="text-center py-8">
+                  <Layers className="h-12 w-12 text-navy-300 mx-auto mb-4" />
+                  <p className="text-navy-500">No community projects found</p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </section>

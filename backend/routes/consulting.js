@@ -1,98 +1,23 @@
 const express = require('express');
 const router = express.Router();
-const fs = require('fs').promises;
-const path = require('path');
+const AWS = require('aws-sdk');
+const nodemailer = require('nodemailer');
+const { v4: uuidv4 } = require('uuid');
 
-// Ensure data directory exists
-const DATA_DIR = path.join(__dirname, '../data');
-const CONSULTING_FILE = path.join(DATA_DIR, 'consulting-requests.json');
-
-// Initialize data directory and file
-const initializeDataStorage = async () => {
-  try {
-    await fs.mkdir(DATA_DIR, { recursive: true });
-    
-    // Check if file exists, if not create it with empty array
-    try {
-      await fs.access(CONSULTING_FILE);
-    } catch (error) {
-      await fs.writeFile(CONSULTING_FILE, JSON.stringify([], null, 2));
-    }
-  } catch (error) {
-    console.error('Error initializing data storage:', error);
-  }
-};
-
-// Load consulting requests from file
-const loadConsultingRequests = async () => {
-  try {
-    const data = await fs.readFile(CONSULTING_FILE, 'utf8');
-    return JSON.parse(data);
-  } catch (error) {
-    console.error('Error loading consulting requests:', error);
-    return [];
-  }
-};
-
-// Save consulting requests to file
-const saveConsultingRequests = async (requests) => {
-  try {
-    await fs.writeFile(CONSULTING_FILE, JSON.stringify(requests, null, 2));
-  } catch (error) {
-    console.error('Error saving consulting requests:', error);
-    throw error;
-  }
-};
-
-// Generate unique ID
-const generateId = () => {
-  return Date.now().toString(36) + Math.random().toString(36).substr(2);
-};
-
-// Initialize on module load
-initializeDataStorage();
-
-// GET /api/consulting - Get all consulting requests
-router.get('/', async (req, res) => {
-  try {
-    const requests = await loadConsultingRequests();
-    res.json({
-      success: true,
-      data: requests,
-      count: requests.length
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch consulting requests',
-      message: error.message
-    });
-  }
+// Configure AWS
+AWS.config.update({
+  region: process.env.AWS_REGION || 'us-east-1'
 });
 
-// GET /api/consulting/:id - Get specific consulting request
-router.get('/:id', async (req, res) => {
-  try {
-    const requests = await loadConsultingRequests();
-    const request = requests.find(r => r.id === req.params.id);
-    
-    if (!request) {
-      return res.status(404).json({
-        success: false,
-        error: 'Consulting request not found'
-      });
-    }
-    
-    res.json({
-      success: true,
-      data: request
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch consulting request',
-      message: error.message
-    });
+const dynamodb = new AWS.DynamoDB.DocumentClient();
+const TABLE_NAME = process.env.DYNAMODB_TABLE_NAME || 'tresidus-consulting-requests';
+
+// Configure nodemailer
+const transporter = nodemailer.createTransport({
+  service: 'gmail', // or your email service
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
   }
 });
 
@@ -130,8 +55,11 @@ router.post('/', async (req, res) => {
       });
     }
 
+    const requestId = uuidv4();
+    const timestamp = new Date().toISOString();
+
     const newRequest = {
-      id: generateId(),
+      id: requestId,
       name: name.trim(),
       email: email.trim().toLowerCase(),
       company: company?.trim() || '',
@@ -144,22 +72,56 @@ router.post('/', async (req, res) => {
       preferredTime: preferredTime || '',
       communicationPreference: communicationPreference || 'email',
       status: 'pending',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      notes: [],
-      communications: []
+      createdAt: timestamp,
+      updatedAt: timestamp
     };
 
-    const requests = await loadConsultingRequests();
-    requests.push(newRequest);
-    await saveConsultingRequests(requests);
+    // Save to DynamoDB
+    const params = {
+      TableName: TABLE_NAME,
+      Item: newRequest
+    };
+
+    await dynamodb.put(params).promise();
+
+    // Send email notification
+    try {
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: 'support@tresidus.com',
+        subject: `New Consulting Request from ${name}`,
+        html: `
+          <h2>New Consulting Request</h2>
+          <p><strong>Name:</strong> ${name}</p>
+          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>Company:</strong> ${company || 'Not specified'}</p>
+          <p><strong>Phone:</strong> ${phone || 'Not specified'}</p>
+          <p><strong>Project Type:</strong> ${projectType}</p>
+          <p><strong>Budget:</strong> ${budget}</p>
+          <p><strong>Timeline:</strong> ${timeline}</p>
+          <p><strong>Preferred Date:</strong> ${preferredDate || 'Not specified'}</p>
+          <p><strong>Preferred Time:</strong> ${preferredTime || 'Not specified'}</p>
+          <p><strong>Communication Preference:</strong> ${communicationPreference}</p>
+          <p><strong>Description:</strong></p>
+          <p>${description}</p>
+          <p><strong>Request ID:</strong> ${requestId}</p>
+          <p><strong>Submitted:</strong> ${timestamp}</p>
+        `
+      };
+
+      await transporter.sendMail(mailOptions);
+    } catch (emailError) {
+      console.error('Error sending email:', emailError);
+      // Don't fail the request if email fails
+    }
 
     res.status(201).json({
       success: true,
       message: 'Consulting request submitted successfully',
-      data: newRequest
+      data: { id: requestId, status: 'pending' }
     });
   } catch (error) {
+    console.error('Error creating consulting request:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to create consulting request',
@@ -168,120 +130,102 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT /api/consulting/:id - Update consulting request
-router.put('/:id', async (req, res) => {
+// GET /api/consulting - Get all consulting requests (for admin use)
+router.get('/', async (req, res) => {
   try {
-    const requests = await loadConsultingRequests();
-    const requestIndex = requests.findIndex(r => r.id === req.params.id);
+    const params = {
+      TableName: TABLE_NAME
+    };
+
+    const result = await dynamodb.scan(params).promise();
+
+    res.json({
+      success: true,
+      data: result.Items,
+      count: result.Items.length
+    });
+  } catch (error) {
+    console.error('Error fetching consulting requests:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch consulting requests',
+      message: error.message
+    });
+  }
+});
+
+// GET /api/consulting/:id - Get specific consulting request
+router.get('/:id', async (req, res) => {
+  try {
+    const params = {
+      TableName: TABLE_NAME,
+      Key: {
+        id: req.params.id
+      }
+    };
+
+    const result = await dynamodb.get(params).promise();
     
-    if (requestIndex === -1) {
+    if (!result.Item) {
       return res.status(404).json({
         success: false,
         error: 'Consulting request not found'
       });
     }
+    
+    res.json({
+      success: true,
+      data: result.Item
+    });
+  } catch (error) {
+    console.error('Error fetching consulting request:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch consulting request',
+      message: error.message
+    });
+  }
+});
 
-    const updatedRequest = {
-      ...requests[requestIndex],
-      ...req.body,
-      updatedAt: new Date().toISOString()
+// PUT /api/consulting/:id - Update consulting request (for admin use)
+router.put('/:id', async (req, res) => {
+  try {
+    const { status, notes } = req.body;
+    const timestamp = new Date().toISOString();
+
+    const params = {
+      TableName: TABLE_NAME,
+      Key: {
+        id: req.params.id
+      },
+      UpdateExpression: 'SET #status = :status, updatedAt = :updatedAt',
+      ExpressionAttributeNames: {
+        '#status': 'status'
+      },
+      ExpressionAttributeValues: {
+        ':status': status,
+        ':updatedAt': timestamp
+      },
+      ReturnValues: 'ALL_NEW'
     };
 
-    requests[requestIndex] = updatedRequest;
-    await saveConsultingRequests(requests);
+    if (notes) {
+      params.UpdateExpression += ', notes = :notes';
+      params.ExpressionAttributeValues[':notes'] = notes;
+    }
+
+    const result = await dynamodb.update(params).promise();
 
     res.json({
       success: true,
       message: 'Consulting request updated successfully',
-      data: updatedRequest
+      data: result.Attributes
     });
   } catch (error) {
+    console.error('Error updating consulting request:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to update consulting request',
-      message: error.message
-    });
-  }
-});
-
-// POST /api/consulting/:id/communication - Add communication record
-router.post('/:id/communication', async (req, res) => {
-  try {
-    const { type, subject, content, method, followUpRequired, followUpDate } = req.body;
-
-    if (!type || !content) {
-      return res.status(400).json({
-        success: false,
-        error: 'Communication type and content are required'
-      });
-    }
-
-    const requests = await loadConsultingRequests();
-    const requestIndex = requests.findIndex(r => r.id === req.params.id);
-    
-    if (requestIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        error: 'Consulting request not found'
-      });
-    }
-
-    const communication = {
-      id: generateId(),
-      type: type, // 'email', 'call', 'meeting', 'note'
-      subject: subject || '',
-      content: content.trim(),
-      method: method || 'email',
-      followUpRequired: followUpRequired || false,
-      followUpDate: followUpDate || null,
-      createdAt: new Date().toISOString(),
-      createdBy: 'system' // In a real app, this would be the logged-in user
-    };
-
-    requests[requestIndex].communications.push(communication);
-    requests[requestIndex].updatedAt = new Date().toISOString();
-    
-    await saveConsultingRequests(requests);
-
-    res.status(201).json({
-      success: true,
-      message: 'Communication record added successfully',
-      data: communication
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: 'Failed to add communication record',
-      message: error.message
-    });
-  }
-});
-
-// DELETE /api/consulting/:id - Delete consulting request
-router.delete('/:id', async (req, res) => {
-  try {
-    const requests = await loadConsultingRequests();
-    const requestIndex = requests.findIndex(r => r.id === req.params.id);
-    
-    if (requestIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        error: 'Consulting request not found'
-      });
-    }
-
-    const deletedRequest = requests.splice(requestIndex, 1)[0];
-    await saveConsultingRequests(requests);
-
-    res.json({
-      success: true,
-      message: 'Consulting request deleted successfully',
-      data: deletedRequest
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: 'Failed to delete consulting request',
       message: error.message
     });
   }

@@ -1,19 +1,23 @@
-const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
-const { DynamoDBDocumentClient, PutCommand, GetCommand, ScanCommand, UpdateCommand } = require('@aws-sdk/lib-dynamodb');
+const AWS = require('aws-sdk');
+const nodemailer = require('nodemailer');
+const { v4: uuidv4 } = require('uuid');
 
-// Configure AWS DynamoDB
-const client = new DynamoDBClient({ region: process.env.AWS_REGION || 'us-east-1' });
-const dynamodb = DynamoDBDocumentClient.from(client);
+// Configure AWS
+AWS.config.update({
+  region: process.env.AWS_REGION || 'us-east-1'
+});
+
+const dynamodb = new AWS.DynamoDB.DocumentClient();
 const TABLE_NAME = 'tresidus-consulting-requests';
 
-// Simple UUID generator
-function generateUUID() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    const r = Math.random() * 16 | 0;
-    const v = c == 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
-}
+// Configure nodemailer
+const transporter = nodemailer.createTransporter({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER || 'support@tresidus.com',
+    pass: process.env.EMAIL_PASS || 'your-app-password'
+  }
+});
 
 // Lambda handler
 exports.handler = async (event, context) => {
@@ -176,7 +180,7 @@ async function handleConsultingRoutes(method, path, body, queryParams, corsHeade
         };
       }
 
-      const requestId = generateUUID();
+      const requestId = uuidv4();
       const timestamp = new Date().toISOString();
 
       const newRequest = {
@@ -198,15 +202,43 @@ async function handleConsultingRoutes(method, path, body, queryParams, corsHeade
       };
 
       // Save to DynamoDB
-      const command = new PutCommand({
+      const params = {
         TableName: TABLE_NAME,
         Item: newRequest
-      });
+      };
 
-      await dynamodb.send(command);
+      await dynamodb.put(params).promise();
 
-      // Log for notification (email functionality can be added later)
-      console.log('New consulting request created:', requestId, newRequest);
+      // Send email notification
+      try {
+        const mailOptions = {
+          from: process.env.EMAIL_USER || 'support@tresidus.com',
+          to: 'support@tresidus.com',
+          subject: `New Consulting Request from ${name}`,
+          html: `
+            <h2>New Consulting Request</h2>
+            <p><strong>Name:</strong> ${name}</p>
+            <p><strong>Email:</strong> ${email}</p>
+            <p><strong>Company:</strong> ${company || 'Not specified'}</p>
+            <p><strong>Phone:</strong> ${phone || 'Not specified'}</p>
+            <p><strong>Project Type:</strong> ${projectType}</p>
+            <p><strong>Budget:</strong> ${budget}</p>
+            <p><strong>Timeline:</strong> ${timeline}</p>
+            <p><strong>Preferred Date:</strong> ${preferredDate || 'Not specified'}</p>
+            <p><strong>Preferred Time:</strong> ${preferredTime || 'Not specified'}</p>
+            <p><strong>Communication Preference:</strong> ${communicationPreference}</p>
+            <p><strong>Description:</strong></p>
+            <p>${description}</p>
+            <p><strong>Request ID:</strong> ${requestId}</p>
+            <p><strong>Submitted:</strong> ${timestamp}</p>
+          `
+        };
+
+        await transporter.sendMail(mailOptions);
+      } catch (emailError) {
+        console.error('Error sending email:', emailError);
+        // Don't fail the request if email fails
+      }
 
       return {
         statusCode: 201,
@@ -221,11 +253,11 @@ async function handleConsultingRoutes(method, path, body, queryParams, corsHeade
 
     // GET /api/consulting - Get all consulting requests
     if (method === 'GET' && path === '/api/consulting') {
-      const command = new ScanCommand({
+      const params = {
         TableName: TABLE_NAME
-      });
+      };
 
-      const result = await dynamodb.send(command);
+      const result = await dynamodb.scan(params).promise();
 
       return {
         statusCode: 200,
@@ -242,12 +274,12 @@ async function handleConsultingRoutes(method, path, body, queryParams, corsHeade
     if (method === 'GET' && path.match(/^\/api\/consulting\/[^\/]+$/)) {
       const id = path.split('/').pop();
       
-      const command = new GetCommand({
+      const params = {
         TableName: TABLE_NAME,
         Key: { id }
-      });
+      };
 
-      const result = await dynamodb.send(command);
+      const result = await dynamodb.get(params).promise();
       
       if (!result.Item) {
         return {
@@ -276,28 +308,26 @@ async function handleConsultingRoutes(method, path, body, queryParams, corsHeade
       const { status, notes } = body;
       const timestamp = new Date().toISOString();
 
-      const updateExpression = 'SET #status = :status, updatedAt = :updatedAt';
-      const expressionAttributeNames = { '#status': 'status' };
-      const expressionAttributeValues = {
-        ':status': status,
-        ':updatedAt': timestamp
+      const params = {
+        TableName: TABLE_NAME,
+        Key: { id },
+        UpdateExpression: 'SET #status = :status, updatedAt = :updatedAt',
+        ExpressionAttributeNames: {
+          '#status': 'status'
+        },
+        ExpressionAttributeValues: {
+          ':status': status,
+          ':updatedAt': timestamp
+        },
+        ReturnValues: 'ALL_NEW'
       };
 
       if (notes) {
-        updateExpression += ', notes = :notes';
-        expressionAttributeValues[':notes'] = notes;
+        params.UpdateExpression += ', notes = :notes';
+        params.ExpressionAttributeValues[':notes'] = notes;
       }
 
-      const command = new UpdateCommand({
-        TableName: TABLE_NAME,
-        Key: { id },
-        UpdateExpression: updateExpression,
-        ExpressionAttributeNames: expressionAttributeNames,
-        ExpressionAttributeValues: expressionAttributeValues,
-        ReturnValues: 'ALL_NEW'
-      });
-
-      const result = await dynamodb.send(command);
+      const result = await dynamodb.update(params).promise();
 
       return {
         statusCode: 200,

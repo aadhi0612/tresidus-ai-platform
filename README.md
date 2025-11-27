@@ -8,13 +8,22 @@ Welcome to Tresidus AI, an innovative AI agentic company specializing in cutting
 
 ## 🚀 Featured Projects
 
-### [StockAgentIQ](https://stockagentiq.com)
-AI-powered stock suggestion bot that analyzes market trends and provides intelligent investment recommendations.
+### Community Projects
+Open-source projects and community contributions:
 
-### [Prompt Viewer](https://promptweaver.dataopslabs.com/)
+#### [AgentIQ Alerts](https://www.agentiqalerts.com/)
+Receive personalized WhatsApp notifications about market trends, AI updates, and tech insights. Your AI agent learns what matters to you and delivers intelligence when you need it.
+
+#### [NLP API](https://github.com/tresidus/nlp-api)
+Open-source enterprise-grade NLP API for sentiment analysis and entity extraction.
+
+### Other Projects
+Commercial and enterprise solutions:
+
+#### [Prompt Viewer](https://promptweaver.dataopslabs.com/)
 Advanced prompt generator for GenAI use cases, helping users create optimized prompts for various AI applications.
 
-### [Socials](https://socials.dataopslabs.com/)
+#### [Socials](https://socials.dataopslabs.com/)
 Multi-platform social media management tool that enables content generation and direct scheduling across multiple social platforms with zero effort.
 
 ## 🏗️ Architecture
@@ -29,7 +38,8 @@ Multi-platform social media management tool that enables content generation and 
 - **Runtime**: Node.js 18.x
 - **Framework**: Express.js
 - **Deployment**: AWS Lambda + API Gateway
-- **Storage**: JSON file-based (easily upgradeable to database)
+- **Database**: AWS DynamoDB
+- **Email Service**: Nodemailer with SMTP
 
 ## 🚀 Quick Start
 
@@ -62,11 +72,10 @@ Multi-platform social media management tool that enables content generation and 
 - `GET /health` - Health check endpoint
 
 ### Consulting API
-- `GET /api/consulting` - Get all consulting requests
+- `GET /api/consulting` - Get all consulting requests (admin only)
 - `GET /api/consulting/:id` - Get specific consulting request
 - `POST /api/consulting` - Create new consulting request
-- `PUT /api/consulting/:id` - Update consulting request
-- `DELETE /api/consulting/:id` - Delete consulting request
+- `PUT /api/consulting/:id` - Update consulting request (admin only)
 
 ### Projects & Analytics
 - `GET /api/projects` - Get projects data
@@ -76,15 +85,14 @@ Multi-platform social media management tool that enables content generation and 
 
 ### Core Platform
 - **Responsive Design**: Mobile-first approach with Tailwind CSS
-- **Project Showcase**: Interactive project cards with live demo links
-- **Real-time Analytics**: Dashboard with key performance metrics
-- **Activity Feed**: Live updates and system notifications
+- **Project Showcase**: Interactive project cards organized by category
+- **Contact Integration**: Direct email contact via support@tresidus.com
 
 ### Consulting System
 - **Consultation Scheduling**: Comprehensive form for client requests
-- **Request Management**: Dashboard to view and manage consulting requests
-- **Communication Tracking**: Record and track all client communications
-- **Status Management**: Track request status from pending to completion
+- **DynamoDB Integration**: Scalable data storage for consulting requests
+- **Email Notifications**: Automatic email alerts to support@tresidus.com
+- **Request Tracking**: Unique ID generation for each consultation request
 
 ## 🚦 Available Scripts
 
@@ -110,6 +118,13 @@ The frontend is automatically deployed to AWS Amplify on every push to the main 
 ### AWS Lambda (Backend)
 The backend is deployed as AWS Lambda functions with API Gateway integration.
 
+### Environment Variables
+Required environment variables for backend:
+- `AWS_REGION` - AWS region for DynamoDB
+- `DYNAMODB_TABLE_NAME` - DynamoDB table name for consulting requests
+- `EMAIL_USER` - SMTP email username
+- `EMAIL_PASS` - SMTP email password
+
 ## 🤝 Contributing
 
 1. Fork the repository
@@ -124,9 +139,13 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 🔗 External Links
 
-- [StockAgentIQ Platform](https://stockagentiq.com)
+- [AgentIQ Alerts Platform](https://www.agentiqalerts.com/)
 - [Prompt Weaver Tool](https://promptweaver.dataopslabs.com/)
 - [Socials Management Platform](https://socials.dataopslabs.com/)
+
+## 📧 Contact
+
+For inquiries and support, please contact us at: **support@tresidus.com**
 
 ---
 

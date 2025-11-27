@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Calendar, Clock, Mail, Phone, User, Building, DollarSign, MessageSquare, Send, CheckCircle } from 'lucide-react';
+import { config } from '../../config';
 
 interface ConsultingFormData {
   name: string;
@@ -77,7 +78,11 @@ const ConsultingForm: React.FC = () => {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:5000/api/consulting', {
+      const apiUrl = config.ENVIRONMENT === 'production' 
+        ? `${config.API_BASE_URL}/api/consulting`
+        : 'http://localhost:5000/api/consulting';
+
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -121,7 +126,7 @@ const ConsultingForm: React.FC = () => {
           <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-navy-900 mb-4">Request Submitted Successfully!</h2>
           <p className="text-navy-600 mb-6">
-            Thank you for your interest in our consulting services. We'll review your request and get back to you within 24 hours.
+            Thank you for your interest in our consulting services. We'll review your request and get back to you within 24 hours at support@tresidus.com.
           </p>
           <button
             onClick={() => setIsSubmitted(false)}

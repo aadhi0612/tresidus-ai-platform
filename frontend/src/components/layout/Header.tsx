@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrainCircuit, Bell, Search, Menu, X, Calendar } from 'lucide-react';
+import { BrainCircuit, Bell, Search, Menu, X, Calendar, Mail } from 'lucide-react';
 
 interface HeaderProps {
   currentPage: string;
@@ -22,6 +22,10 @@ const Header: React.FC<HeaderProps> = ({ currentPage, setCurrentPage }) => {
   const handleNavClick = (page: 'dashboard' | 'consulting') => {
     setCurrentPage(page);
     setIsMobileMenuOpen(false);
+  };
+
+  const handleContactClick = () => {
+    window.location.href = 'mailto:support@tresidus.com';
   };
 
   return (
@@ -60,9 +64,13 @@ const Header: React.FC<HeaderProps> = ({ currentPage, setCurrentPage }) => {
             <a href="#projects" className="nav-link">
               Projects
             </a>
-            <a href="#team" className="nav-link">
-              Team
-            </a>
+            <button
+              onClick={handleContactClick}
+              className="nav-link flex items-center"
+            >
+              <Mail className="h-4 w-4 mr-1" />
+              Contact
+            </button>
           </nav>
 
           {/* User Menu */}
@@ -121,9 +129,13 @@ const Header: React.FC<HeaderProps> = ({ currentPage, setCurrentPage }) => {
             <a href="#projects" className="nav-link">
               Projects
             </a>
-            <a href="#team" className="nav-link">
-              Team
-            </a>
+            <button
+              onClick={handleContactClick}
+              className="nav-link text-left flex items-center"
+            >
+              <Mail className="h-4 w-4 mr-1" />
+              Contact
+            </button>
             <div className="flex items-center space-x-4 pt-2">
               <button
                 className="rounded-full p-2 text-navy-600 hover:bg-navy-100 transition-colors"
