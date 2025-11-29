@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrainCircuit, Bell, Search, Menu, X, Calendar, Mail } from 'lucide-react';
+import { Bell, Search, Menu, X, Calendar, Mail } from 'lucide-react';
 
 interface HeaderProps {
   currentPage: string;
@@ -32,18 +32,26 @@ const Header: React.FC<HeaderProps> = ({ currentPage, setCurrentPage }) => {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? 'bg-white shadow-md py-2'
-          : 'bg-transparent py-4'
+          ? 'bg-white shadow-md py-4'
+          : 'bg-transparent py-5'
       }`}
     >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center cursor-pointer" onClick={() => handleNavClick('dashboard')}>
-            <BrainCircuit className="h-8 w-8 text-teal-500" />
-            <span className="ml-2 text-xl font-bold tracking-tight text-navy-900">
-              TRESIDUS
-            </span>
+            <div className="bg-white rounded-lg p-3 shadow-sm">
+              <img 
+                src="/tresidus-logo.png" 
+                alt="Tresidus Logo" 
+                className="h-12 w-12"
+              />
+            </div>
+            <img 
+              src="/tresidus-name.png" 
+              alt="Tresidus" 
+              className="ml-3 h-16"
+            />
           </div>
 
           {/* Desktop Navigation */}

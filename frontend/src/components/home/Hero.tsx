@@ -66,7 +66,13 @@ const Hero: React.FC<HeroProps> = ({ onNavigateToConsulting }) => {
       
       <div className="container mx-auto px-4 relative z-10 text-center">
         <div className="animate-float">
-          <BrainCircuit className="h-24 w-24 mx-auto text-teal-500 mb-6" />
+          <div className="bg-white rounded-full p-6 mx-auto w-fit mb-8 shadow-lg">
+            <img 
+              src="/tresidus-logo.png" 
+              alt="Tresidus Logo" 
+              className="h-32 w-32 mx-auto"
+            />
+          </div>
         </div>
         
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 text-white tracking-tight">

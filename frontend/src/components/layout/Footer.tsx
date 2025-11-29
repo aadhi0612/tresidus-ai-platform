@@ -1,5 +1,4 @@
 import React from 'react';
-import { BrainCircuit } from 'lucide-react';
 
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
@@ -11,7 +10,11 @@ const Footer: React.FC = () => {
           {/* Logo and info */}
           <div>
             <div className="flex items-center">
-              <BrainCircuit className="h-8 w-8 text-teal-500" />
+              <img 
+                src="/tresidus-logo.png" 
+                alt="Tresidus Logo" 
+                className="h-8 w-8"
+              />
               <span className="ml-2 text-xl font-bold tracking-tight">
                 TRESIDUS
               </span>
